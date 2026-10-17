@@ -1,0 +1,4 @@
+requests==2.34.2
+beautifulsoup4==4.15.0
+RapidFuzz==3.14.6
+streamlit==1.66.0

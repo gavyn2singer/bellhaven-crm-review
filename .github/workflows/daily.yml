@@ -1,0 +1,38 @@
+name: Daily Bellhaven proposals
+
+# Proposes only. Approvals happen by hand in the review app.
+on:
+  schedule:
+    - cron: "0 12 * * *"   # 12:00 UTC every day
+  workflow_dispatch:
+
+permissions:
+  contents: write   # needed to save state.db back to the repo
+
+jobs:
+  propose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install -r requirements.txt
+
+      - name: Scrape, match, save new proposals
+        env:
+          BH_TOKEN: ${{ secrets.BH_TOKEN }}
+        run: python pipeline.py
+
+      # state.db is what stops a re-run from re-proposing decided items.
+      # Save it back so the next run (and the local review app) see the same decisions.
+      # shortcut: state.db in git conflicts if a local review and this job both change it; move to a shared DB before more than one reviewer.
+      - name: Save state.db
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@users.noreply.github.com"
+          git add state.db
+          git diff --cached --quiet || git commit -m "Daily proposals: update state.db"
+          git push

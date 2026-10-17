@@ -1,0 +1,263 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  :root { --ink:rgb(55,53,47); --muted:rgba(55,53,47,.65); --faint:rgba(55,53,47,.45); --line:rgba(55,53,47,.09);
+          --callout:rgb(241,241,239); --code:rgba(135,131,120,.15); --codeink:#EB5757; --blue:#2383E2; --red:#EB5757;
+          --chowbg:#FBF3DB; --movebg:#EDF3EC; --flagbg:#FDEBEC; --hl:rgba(251,243,219,.6);
+          --input:rgba(242,241,238,.6); --inputline:rgba(15,15,15,.1); --btnline:rgba(55,53,47,.16); --hover:rgba(55,53,47,.08);
+          --t-gray:#E3E2E0;--x-gray:#32302C;--t-brown:#EEE0DA;--x-brown:#442A1E;--t-orange:#FADEC9;--x-orange:#49290E;
+          --t-yellow:#FDECC8;--x-yellow:#402C1B;--t-green:#DBEDDB;--x-green:#1C3829;--t-blue:#D3E5EF;--x-blue:#183347;
+          --t-purple:#E8DEEE;--x-purple:#412454;--t-pink:#F5E0E9;--x-pink:#4C2337;--t-red:#FFE2DD;--x-red:#5D1715; }
+  body { margin:0; font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif;
+         color:var(--ink); background:transparent; }
+  .wrap { padding:6px 0 0; overflow:hidden; }
+  .card { position:relative; box-sizing:border-box; padding:12px 4px 8px; touch-action:none; user-select:none; cursor:grab; }
+  .pill { display:inline-block; font-size:14px; line-height:20px; height:20px; padding:0 6px; border-radius:3px; background:var(--tb); color:var(--tx); }
+  h2 { margin:10px 0 18px; font-size:40px; font-weight:700; letter-spacing:-.01em; line-height:1.2; }
+  .hero, .sop, .flag { display:flex; gap:10px; border-radius:4px; padding:16px 16px 16px 12px; margin:0 0 8px; font-size:16px; line-height:1.5; }
+  .hero { background:var(--callout); }
+  .hero::before { content:"💡"; }
+  .hero .rows { flex:1; }
+  .hero .rows > div + div { margin-top:8px; }
+  .hero .f { font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:85%; background:var(--code);
+             color:var(--codeink); border-radius:3px; padding:0 .4em; margin-right:8px; }
+  .hero s { color:var(--faint); }
+  .hero .arrow { color:var(--muted); margin:0 6px; }
+  .hero b.new { font-weight:700; }
+  .sop { background:var(--chowbg); } .sop.move { background:var(--movebg); } .sop::before { content:"⚖️"; }
+  .flag { background:var(--flagbg); } .flag::before { content:"⚠️"; }
+  .check { font-size:16px; line-height:1.5; margin:18px 0 8px; padding-left:14px; border-left:3px solid var(--ink); }
+  .why { font-size:14px; color:var(--muted); margin:0 0 20px; }
+  ul { padding-left:20px; margin:6px 0 16px; }
+  li { margin:4px 0; font-size:16px; line-height:1.5; }
+  table.ev { width:100%; border-collapse:collapse; font-size:14px; }
+  table.ev th { text-align:left; font-size:14px; color:var(--muted); font-weight:500; height:34px; padding:0 10px; border-bottom:1px solid var(--line); }
+  table.ev td { height:34px; padding:0 10px; color:var(--faint); border-bottom:1px solid var(--line); }
+  table.ev th + th, table.ev td + td { border-left:1px solid var(--line); }
+  table.ev th:first-child, table.ev td:first-child { padding-left:2px; border-left:0; width:22%; }
+  table.ev tr.diff td { color:var(--ink); font-weight:600; background:var(--hl); }
+  .stamp { position:absolute; top:24px; font-weight:800; font-size:22px; letter-spacing:.06em; padding:4px 10px;
+           border:3px solid; border-radius:4px; opacity:0; pointer-events:none; }
+  .stamp.ok { right:20px; color:var(--blue); border-color:var(--blue); transform:rotate(8deg); }
+  .stamp.no { left:20px; color:var(--red); border-color:var(--red); transform:rotate(-8deg); }
+  .reason { width:100%; box-sizing:border-box; margin-top:20px; padding:6px 10px; border:0; box-shadow:inset 0 0 0 1px var(--inputline);
+            border-radius:4px; background:var(--input); color:var(--ink); font:inherit; font-size:14px; }
+  .actions { display:flex; gap:8px; margin-top:14px; }
+  button { font:inherit; font-size:14px; font-weight:500; padding:6px 12px; border-radius:4px; border:0; background:transparent; color:var(--muted); cursor:pointer; }
+  button:hover { background:var(--hover); }
+  button.ok { background:var(--blue); color:#fff; } button.ok:hover { background:#0077D4; }
+  button.no { color:var(--red); box-shadow:inset 0 0 0 1px var(--btnline); }
+  .src { display:inline-block; margin:-6px 0 14px; font-size:14px; color:var(--muted); text-decoration:underline; text-underline-offset:3px; }
+  .src:hover { color:var(--ink); }
+  .hint { font-size:12px; color:var(--faint); margin:12px 4px 0; }
+  .cols2 { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:48px; align-items:start; }
+  @media (max-width:900px) { .cols2 { grid-template-columns:1fr; gap:16px; } }
+  kbd { font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background:var(--code); border-radius:3px; padding:0 .4em; font-size:85%; }
+  .confirm { margin-top:20px; padding:12px 16px; background:var(--callout); border-radius:4px; }
+  .confirm[hidden], #normal[hidden] { display:none; }
+  .confirm p { margin:0 0 8px; font-weight:600; font-size:16px; }
+  .confirm ul { margin:0 0 4px; padding-left:20px; }
+  .confirm li { font-size:14px; line-height:1.5; }
+</style>
+</head>
+<body>
+<div class="wrap"><div class="card" id="card"></div></div>
+<div class="hint"><kbd>A</kbd> or <kbd>→</kbd> approve, then again to write · <kbd>R</kbd> or <kbd>←</kbd> reject · <kbd>S</kbd> or <kbd>↓</kbd> skip · <kbd>U</kbd> or <kbd>↑</kbd> back to last skipped · <kbd>Esc</kbd> leaves the reason box</div>
+
+<script>
+  const card = document.getElementById("card");
+  let sent = false, startX = 0, dx = 0, dragging = false;
+
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c =>
+    ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+  function post(type, data) {
+    window.parent.postMessage(Object.assign({isStreamlitMessage: true, type}, data), "*");
+  }
+
+  function send(action) {
+    // Fly the card off, then tell Python. One send per card.
+    if (sent) return;
+    sent = true;
+    const reason = document.getElementById("why")?.value || "";
+    const dir = action === "approve" ? 1 : action === "reject" ? -1 : 0;
+    card.style.transition = "transform .35s ease, opacity .35s ease";
+    card.style.transform = dir
+      ? `translateX(${dir * window.innerWidth}px) rotate(${dir * 25}deg)`
+      : "translateY(60vh)";
+    card.style.opacity = 0;
+    setTimeout(() => post("streamlit:setComponentValue",
+      {value: {action, reason}, dataType: "json"}), 350);
+  }
+
+  const TAG = {create:["green","🏥"], chow:["orange","🔁"], chow_existing:["yellow","🔗"], reparent:["blue","↪️"],
+               update_address:["purple","📍"], update_name:["pink","✏️"], mark_duplicate:["gray","🧬"], orphan_review:["red","❓"]};
+  const bold = s => esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+  const heroRow = h => Array.isArray(h)
+    ? `<div><code class="f">${esc(h[0])}</code><s>${esc(h[1])}</s><span class="arrow">→</span><b class="new">${esc(h[2])}</b></div>`
+    : `<div>${bold(h)}</div>`;
+  function evidence(web, crm, same) {
+    const w = Object.fromEntries(web), c = Object.fromEntries(crm);
+    const keys = [...new Set([...web.map(r => r[0]), ...crm.map(r => r[0])])];
+    const body = keys.map(k => `<tr class="${!crm.length || !web.length ? "" : !(same || []).includes(k) ? "diff" : "same"}"><td>${esc(k)}</td><td>${esc(w[k] ?? "—")}</td><td>${esc(c[k] ?? "—")}</td></tr>`).join("");
+    return `<table class="ev"><tr><th>Field</th><th>Website</th><th>CRM now</th></tr>${body}</table>`;
+  }
+
+  let cardId = null;
+  let args = {};  // the current card's props, for the key handler
+  function render(a) {
+    args = a;
+    // Streamlit can resend the same card on a rerun. Redrawing it would close the confirm panel.
+    if (a.card_id === cardId) return;
+    cardId = a.card_id;
+    sent = false;
+    card.style.transition = "none";
+    card.style.transform = "";
+    card.style.opacity = 1;
+    const [tc] = TAG[a.ctype] || ["gray"];
+    card.style.setProperty("--tb", `var(--t-${tc})`);
+    card.style.setProperty("--tx", `var(--x-${tc})`);
+    card.innerHTML = `
+      <div class="stamp ok">APPROVE</div>
+      <div class="stamp no">REJECT</div>
+      <span class="pill">${esc(a.label)}</span>
+      <h2>${esc(a.title)}</h2>${a.site_url ? `<a class="src" href="${esc(a.site_url)}" target="_blank" rel="noopener">View on website ↗</a>` : ""}
+      <div class="cols2"><div class="decide">
+      <div class="hero"><div class="rows">${(a.hero || []).map(heroRow).join("")}</div></div>
+      ${a.sop ? `<div class="sop ${/new one is created/.test(a.sop) ? "chow" : "move"}"><div>${esc(a.sop).replace(/(\$[\d,]+)/g, "<b>$1</b>")}</div></div>` : ""}
+      ${a.flag ? `<div class="flag"><div>${esc(a.flag)}</div></div>` : ""}
+      <p class="check"><b>Check before approving:</b> ${esc(a.check)}</p>
+      <p class="why">${esc(a.reason)}</p>
+      <div id="normal">
+        <input class="reason" id="why" placeholder="Reject reason (optional)">
+        <div class="actions">
+          <button class="ok" id="b-ok">Approve</button>
+          <button class="no" id="b-no">Reject</button>
+          <button id="b-skip">Skip</button>
+        </div>
+      </div>
+      <div class="confirm" id="confirm" hidden>
+        <p>Write this to the CRM now?</p>
+        <ul>${a.changes.map(c => `<li>${esc(c)}</li>`).join("")}</ul>
+        <div class="actions">
+          <button class="ok" id="b-confirm">Confirm and write</button>
+          <button id="b-back">Back</button>
+        </div>
+      </div>
+      </div><div class="ev-col">${evidence(a.website, a.crm, a.same)}</div></div>`;
+    document.getElementById("b-ok").onclick = showConfirm;
+    document.getElementById("b-back").onclick = hideConfirm;
+    document.getElementById("b-confirm").onclick = () => send("approve");
+    document.getElementById("b-no").onclick = () => send("reject");
+    document.getElementById("b-skip").onclick = () => send("skip");
+  }
+
+  // Approve never writes on a swipe alone. It opens a confirm panel listing the change.
+  function showConfirm() {
+    card.style.transition = "transform .25s ease";
+    card.style.transform = "";
+    card.querySelectorAll(".stamp").forEach(s => s.style.opacity = 0);
+    document.getElementById("normal").hidden = true;
+    document.getElementById("confirm").hidden = false;
+  }
+  function hideConfirm() {
+    document.getElementById("confirm").hidden = true;
+    document.getElementById("normal").hidden = false;
+  }
+  function confirmOpen() {
+    return !document.getElementById("confirm").hidden;
+  }
+
+  // Drag to swipe. Ignore drags that start on the text box or a button.
+  card.addEventListener("pointerdown", e => {
+    if (sent || e.target.closest("input,button,a")) return;
+    dragging = true; startX = e.clientX; dx = 0;
+    card.setPointerCapture(e.pointerId);
+    card.style.transition = "none";
+  });
+  card.addEventListener("pointermove", e => {
+    if (!dragging) return;
+    dx = e.clientX - startX;
+    card.style.transform = `translateX(${dx}px) rotate(${dx / 18}deg)`;
+    card.querySelector(".stamp.ok").style.opacity = Math.min(Math.max(dx / 120, 0), 1);
+    card.querySelector(".stamp.no").style.opacity = Math.min(Math.max(-dx / 120, 0), 1);
+  });
+  function endDrag() {
+    if (!dragging) return;
+    dragging = false;
+    if (dx > 120) return showConfirm();
+    if (dx < -120) return send("reject");
+    card.style.transition = "transform .25s ease";
+    card.style.transform = "";
+    card.querySelectorAll(".stamp").forEach(s => s.style.opacity = 0);
+  }
+  card.addEventListener("pointerup", endDrag);
+  card.addEventListener("pointercancel", endDrag);
+
+  // Keyboard-only flow:
+  //   Left arrow: reject. Right arrow: open confirm, then Right again writes. Left in confirm: back.
+  //   Down arrow: skip. Up arrow: bring back the last skipped card. Esc: leave the reason box, or back out of confirm.
+  function onKey(e) {
+    if (e.repeat || !window.frameElement?.offsetParent) return;  // held key never confirms; card on a hidden tab never acts
+    const t = e.target;
+    if (["INPUT", "TEXTAREA", "SELECT"].includes(t.tagName) || t.isContentEditable) {
+      if (e.key === "Escape") t.blur();  // hand the arrow keys back to the card
+      return;
+    }
+    if (sent) return;
+    const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (k === "ArrowRight" || k === "a") {
+      e.preventDefault();
+      if (confirmOpen()) send("approve"); else showConfirm();
+    } else if (k === "ArrowLeft" || k === "r") {
+      e.preventDefault();
+      if (confirmOpen()) hideConfirm(); else send("reject");
+    } else if (k === "ArrowDown" || k === "s") {
+      e.preventDefault();
+      if (!confirmOpen()) send("skip");
+    } else if (k === "ArrowUp" || k === "u") {
+      e.preventDefault();
+      if (!confirmOpen() && args.can_unskip) send("unskip");  // nothing skipped yet: ↑ does nothing
+    } else if (e.key === "Escape") {
+      hideConfirm();
+    }
+  }
+
+  // Key presses go to whichever document has focus: this iframe, or the Streamlit page
+  // around it. Listen in both, and drop the listener from the previous card's iframe.
+  function bindKeys() {
+    document.addEventListener("keydown", onKey);
+    const parentDoc = window.parent.document;
+    if (parentDoc.__bhReviewKeys) parentDoc.removeEventListener("keydown", parentDoc.__bhReviewKeys);
+    parentDoc.__bhReviewKeys = onKey;
+    parentDoc.addEventListener("keydown", onKey);
+  }
+  bindKeys();
+
+  // One card on screen at a time, so scale it up to fill the window height (never shrink, cap 1.35x, 6% breathing room).
+  function fit() {
+    const card = document.getElementById("card"), frame = window.frameElement;
+    if (!frame) return;
+    const avail = window.parent.innerHeight - frame.getBoundingClientRect().top
+                  - document.querySelector(".hint").offsetHeight - 32;
+    let z = 1;
+    for (let i = 0; i < 3; i++) {  // zoom reflows the text, so settle in a few passes
+      card.style.zoom = z;
+      z = Math.min(1.35, Math.max(1, 0.94 * z * avail / (card.offsetHeight * z)));
+    }
+    card.style.zoom = z;
+  }
+  window.parent.addEventListener("resize", fit);
+
+  window.addEventListener("message", e => {
+    if (e.data && e.data.type === "streamlit:render") { render(e.data.args); fit(); }
+  });
+  new ResizeObserver(() => post("streamlit:setFrameHeight", {height: document.body.scrollHeight + 4}))
+    .observe(document.body);
+  post("streamlit:componentReady", {apiVersion: 1});
+</script>
+</body>
+</html>
